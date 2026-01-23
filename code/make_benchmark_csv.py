@@ -3,24 +3,25 @@ import re
 import pandas as pd
 from typing import Dict, Any, Optional
 
-FILE_PATHS = [
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-202.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-203.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-204.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-206 (2).txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-210.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-226.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-227.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-230.txt",
-    # VEGFA omitted until files confirmed non-empty
-]
+# ============================================================
+# Purpose
+#   Build benchmark_cases.csv from per-transcript FASTA-like files
+#   exported from BioMart (or equivalent)
+# ============================================================
 
-OUT_CSV = r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\benchmark_cases.csv"
+# -----------------------------
+# Paths
+# -----------------------------
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = REPO_ROOT / "data" / "benchmark"
+OUT_CSV = DATA_DIR / "benchmark_cases.csv"
 
-# ---- Canonical baseline for BRCA1 ----
+# -----------------------------
+# Canonical baseline for BRCA1
+# -----------------------------
 CANONICAL_CASE_ID = "BRCA1-203"
-CANONICAL_DATASET_PATH = r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-203.txt"
 CANONICAL_TRANSCRIPT_ID = "ENST00000357654"
+CANONICAL_DATASET_PATH = DATA_DIR / f"{CANONICAL_CASE_ID}.txt"
 
 # ---- Your curated expected labels ----
 EXPECTED_LABELS = {
@@ -34,7 +35,12 @@ EXPECTED_LABELS = {
     "BRCA1-230": "cds_not_defined",
 }
 
+# ===================================================
+# Helper functions
+# ===================================================
+
 def infer_gene_from_filename(path: str) -> str:
+    """"Infer gene symbol from a filename like 'BRCA1-203.txt' -> 'BRCA1' """
     base = os.path.basename(path)
     m = re.match(r"([A-Za-z0-9]+)-\d+", base)
     return (m.group(1).upper() if m else "UNKNOWN")
@@ -76,12 +82,12 @@ def read_first_header_line(path: str) -> str:
 
 def parse_benchmark_header(header: str) -> Dict[str, Any]:
     """
-    Parse your pipe-delimited header into structured columns.
+    Parse a pipe-delimited header into structured columns.
 
-    Example header (yours):
+    Example header:
     >ENSG...|ENST...|BRCA1|17|43044292|43170245|protein_coding|...
 
-    We only extract the fields that are stable/consistent.
+    Only extract the fields that are stable across exports.
     """
     out: Dict[str, Any] = {
         "header": header,
