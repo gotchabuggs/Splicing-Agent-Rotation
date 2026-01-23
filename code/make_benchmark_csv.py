@@ -4,25 +4,6 @@ from pathlib import Path
 import pandas as pd
 from typing import Dict, Any, Optional, List
 
-# ============================================================
-<<<<<<< HEAD
-# INPUT: single merged TSV / OUTPUT: benchmark_cases.csv
-# ============================================================
-
-DATASET_PATH = r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\code\queries\BRCA1_benchmark_10.tsv"
-OUT_CSV = r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\benchmark_cases.csv"
-
-# ============================================================
-# Benchmark constants
-# ============================================================
-CANONICAL_TRANSCRIPT_ID = "ENST00000357654"
-CANONICAL_DATASET_PATH = DATASET_PATH
-=======
-# Purpose
-#   Build benchmark_cases.csv from per-transcript FASTA-like files
-#   exported from BioMart (or equivalent)
-# ============================================================
-
 # -----------------------------
 # Paths
 # -----------------------------
