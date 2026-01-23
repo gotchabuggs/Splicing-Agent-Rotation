@@ -5,6 +5,7 @@ import pandas as pd
 from typing import Dict, Any, Optional, List
 
 # ============================================================
+<<<<<<< HEAD
 # INPUT: single merged TSV / OUTPUT: benchmark_cases.csv
 # ============================================================
 
@@ -16,6 +17,26 @@ OUT_CSV = r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splici
 # ============================================================
 CANONICAL_TRANSCRIPT_ID = "ENST00000357654"
 CANONICAL_DATASET_PATH = DATASET_PATH
+=======
+# Purpose
+#   Build benchmark_cases.csv from per-transcript FASTA-like files
+#   exported from BioMart (or equivalent)
+# ============================================================
+
+# -----------------------------
+# Paths
+# -----------------------------
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = REPO_ROOT / "data" / "benchmark"
+OUT_CSV = DATA_DIR / "benchmark_cases.csv"
+
+# -----------------------------
+# Canonical baseline for BRCA1
+# -----------------------------
+CANONICAL_CASE_ID = "BRCA1-203"
+CANONICAL_TRANSCRIPT_ID = "ENST00000357654"
+CANONICAL_DATASET_PATH = DATA_DIR / f"{CANONICAL_CASE_ID}.txt"
+>>>>>>> origin/main
 
 EXPECTED_TRANSCRIPTS: List[str] = [
     "ENST00000357654",
@@ -43,6 +64,7 @@ CASE_ID_BY_TX: Dict[str, str] = {
     "ENST00000700183": "BRCA1-237",
 }
 
+<<<<<<< HEAD
 EXPECTED_LABEL_BY_CASE: Dict[str, str] = {
     "BRCA1-203": "protein_coding",
     "BRCA1-221": "protein_coding",
@@ -55,6 +77,17 @@ EXPECTED_LABEL_BY_CASE: Dict[str, str] = {
     "BRCA1-204": "nmd",
     "BRCA1-237": "nmd",
 }
+=======
+# ===================================================
+# Helper functions
+# ===================================================
+
+def infer_gene_from_filename(path: str) -> str:
+    """"Infer gene symbol from a filename like 'BRCA1-203.txt' -> 'BRCA1' """
+    base = os.path.basename(path)
+    m = re.match(r"([A-Za-z0-9]+)-\d+", base)
+    return (m.group(1).upper() if m else "UNKNOWN")
+>>>>>>> origin/main
 
 # ============================================================
 # Helper Functions
@@ -80,6 +113,7 @@ def split_semicol(x: Optional[str]) -> List[str]:
         return []
     return [t.strip() for t in str(x).split(";") if t.strip()]
 
+<<<<<<< HEAD
 def ensure_expected_present(df: pd.DataFrame, tx_col: str) -> None:
     present = set(df[tx_col].dropna().astype(str).unique().tolist())
     missing = sorted(list(set(EXPECTED_TRANSCRIPTS) - present))
@@ -92,6 +126,30 @@ def main() -> None:
         raise FileNotFoundError(f"TSV not found: {tsv_path}")
 
     df = pd.read_csv(tsv_path, sep="\t", dtype=str, low_memory=False)
+=======
+def parse_benchmark_header(header: str) -> Dict[str, Any]:
+    """
+    Parse a pipe-delimited header into structured columns.
+
+    Example header:
+    >ENSG...|ENST...|BRCA1|17|43044292|43170245|protein_coding|...
+
+    Only extract the fields that are stable across exports.
+    """
+    out: Dict[str, Any] = {
+        "header": header,
+        "ensembl_gene_id": "",
+        "ensembl_transcript_id": "",
+        "header_gene_symbol": "",
+        "chrom": "",
+        "gene_start": "",
+        "gene_end": "",
+        "transcript_biotype": "",
+        "cds_start": "",
+        "cds_end": "",
+        "exon_count": "",
+    }
+>>>>>>> origin/main
 
     tx_col = pick_col(df, ["Transcript stable ID"])
     gene_symbol_col = pick_col(df, ["Gene name"])
