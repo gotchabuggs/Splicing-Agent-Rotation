@@ -1,238 +1,176 @@
-import os
-import re
+from __future__ import annotations
+
+from pathlib import Path
 import pandas as pd
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
-FILE_PATHS = [
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-202.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-203.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-204.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-206 (2).txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-210.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-226.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-227.txt",
-    r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-230.txt",
-    # VEGFA omitted until files confirmed non-empty
-]
+# ============================================================
+# INPUT: single merged TSV / OUTPUT: benchmark_cases.csv
+# ============================================================
 
+DATASET_PATH = r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\code\queries\BRCA1_benchmark_10.tsv"
 OUT_CSV = r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\benchmark_cases.csv"
 
-# ---- Canonical baseline for BRCA1 ----
-CANONICAL_CASE_ID = "BRCA1-203"
-CANONICAL_DATASET_PATH = r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-203.txt"
+# ============================================================
+# Benchmark constants
+# ============================================================
 CANONICAL_TRANSCRIPT_ID = "ENST00000357654"
+CANONICAL_DATASET_PATH = DATASET_PATH
 
-# ---- Your curated expected labels ----
-EXPECTED_LABELS = {
-    "BRCA1-202": "retained_intron",
-    "BRCA1-203": "protein_coding",
-    "BRCA1-204": "nmd",
-    "BRCA1-206": "nmd",
-    "BRCA1-210": "retained_intron",
-    "BRCA1-226": "protein_coding",
-    "BRCA1-227": "cds_not_defined",
-    "BRCA1-230": "cds_not_defined",
+EXPECTED_TRANSCRIPTS: List[str] = [
+    "ENST00000357654",
+    "ENST00000494123",
+    "ENST00000470026",
+    "ENST00000621897",
+    "ENST00000354071",
+    "ENST00000461798",
+    "ENST00000700081",
+    "ENST00000492859",
+    "ENST00000461221",
+    "ENST00000700183",
+]
+
+CASE_ID_BY_TX: Dict[str, str] = {
+    "ENST00000357654": "BRCA1-203",
+    "ENST00000494123": "BRCA1-221",
+    "ENST00000470026": "BRCA1-208",
+    "ENST00000621897": "BRCA1-227",
+    "ENST00000354071": "BRCA1-202",
+    "ENST00000461798": "BRCA1-206",
+    "ENST00000700081": "BRCA1-233",
+    "ENST00000492859": "BRCA1-218",
+    "ENST00000461221": "BRCA1-204",
+    "ENST00000700183": "BRCA1-237",
 }
 
-def infer_gene_from_filename(path: str) -> str:
-    base = os.path.basename(path)
-    m = re.match(r"([A-Za-z0-9]+)-\d+", base)
-    return (m.group(1).upper() if m else "UNKNOWN")
+EXPECTED_LABEL_BY_CASE: Dict[str, str] = {
+    "BRCA1-203": "protein_coding",
+    "BRCA1-221": "protein_coding",
+    "BRCA1-208": "protein_coding",
+    "BRCA1-227": "cds_not_defined",
+    "BRCA1-202": "retained_intron",
+    "BRCA1-206": "nmd",
+    "BRCA1-233": "retained_intron",
+    "BRCA1-218": "nmd",
+    "BRCA1-204": "nmd",
+    "BRCA1-237": "nmd",
+}
 
-def infer_case_id(path: str) -> str:
-    """
-    Use filename stem, drop trailing " (2)", and normalize known quirks.
-    """
-    base = os.path.basename(path)
-    stem = os.path.splitext(base)[0]
-    stem = re.sub(r"\s*\(\d+\)$", "", stem).strip()
+# ============================================================
+# Helper Functions
+# ============================================================
 
-    # Normalize "BRCA-227" -> "BRCA1-227" if it ever occurs
-    stem = re.sub(r"^BRCA-(\d+)$", r"BRCA1-\1", stem, flags=re.IGNORECASE)
+def pick_col(df: pd.DataFrame, candidates: List[str]) -> str:
+    for c in candidates:
+        if c in df.columns:
+            return c
+    raise KeyError(f"Missing expected columns. Tried: {candidates}\nFound: {list(df.columns)}")
 
-    # Keep exact "BRCA1-206" format (no underscores)
-    return stem
+def safe_first(series: pd.Series) -> Optional[str]:
+    s = series.dropna()
+    if len(s) == 0:
+        return None
+    v = s.iloc[0]
+    if pd.isna(v):
+        return None
+    return str(v)
 
-def read_first_header_line(path: str) -> str:
-    """
-    Return the first FASTA-like header line (starts with '>') if present, else "".
-    Handles files where header may be preceded by whitespace.
-    """
-    with open(path, "r", encoding="utf-8", errors="ignore") as f:
-        for line in f:
-            s = line.strip()
-            if not s:
-                continue
-            if s.startswith(">"):
-                return s
-            # If the file is weird like "BRCA1-206:>ENSG..." on one line (no space),
-            # still catch the ">" portion
-            if ">" in s:
-                idx = s.find(">")
-                return s[idx:].strip()
-            # stop early if it doesn't look like FASTA at all
-            break
-    return ""
+def split_semicol(x: Optional[str]) -> List[str]:
+    if not x:
+        return []
+    return [t.strip() for t in str(x).split(";") if t.strip()]
 
-def parse_benchmark_header(header: str) -> Dict[str, Any]:
-    """
-    Parse your pipe-delimited header into structured columns.
+def ensure_expected_present(df: pd.DataFrame, tx_col: str) -> None:
+    present = set(df[tx_col].dropna().astype(str).unique().tolist())
+    missing = sorted(list(set(EXPECTED_TRANSCRIPTS) - present))
+    if missing:
+        raise ValueError(f"Missing expected transcript IDs in TSV: {missing}")
 
-    Example header (yours):
-    >ENSG...|ENST...|BRCA1|17|43044292|43170245|protein_coding|...
+def main() -> None:
+    tsv_path = Path(DATASET_PATH)
+    if not tsv_path.exists():
+        raise FileNotFoundError(f"TSV not found: {tsv_path}")
 
-    We only extract the fields that are stable/consistent.
-    """
-    out: Dict[str, Any] = {
-        "header": header,
-        "ensembl_gene_id": "",
-        "ensembl_transcript_id": "",
-        "header_gene_symbol": "",
-        "chrom": "",
-        "gene_start": "",
-        "gene_end": "",
-        "transcript_biotype": "",
-        "cds_start": "",
-        "cds_end": "",
-        "exon_count": "",
-    }
+    df = pd.read_csv(tsv_path, sep="\t", dtype=str, low_memory=False)
 
-    if not header or not header.startswith(">"):
-        return out
+    tx_col = pick_col(df, ["Transcript stable ID"])
+    gene_symbol_col = pick_col(df, ["Gene name"])
+    chrom_col = pick_col(df, ["Chromosome/scaffold name"])
+    gene_start_col = pick_col(df, ["Gene start (bp)"])
+    gene_end_col = pick_col(df, ["Gene end (bp)"])
+    gene_type_col = pick_col(df, ["Gene type"])
 
-    # split by '|'
-    parts = header[1:].split("|")  # drop leading '>'
-    # Guard: some headers can be shorter; only fill what exists.
-    if len(parts) >= 1:
-        out["ensembl_gene_id"] = parts[0].strip()
-    if len(parts) >= 2:
-        out["ensembl_transcript_id"] = parts[1].strip()
-    if len(parts) >= 3:
-        out["header_gene_symbol"] = parts[2].strip()
-    if len(parts) >= 4:
-        out["chrom"] = parts[3].strip()
-    if len(parts) >= 5:
-        out["gene_start"] = parts[4].strip()
-    if len(parts) >= 6:
-        out["gene_end"] = parts[5].strip()
-    if len(parts) >= 7:
-        out["transcript_biotype"] = parts[6].strip()
+    # Optional list-like fields
+    exon_id_col = "Exon stable ID" if "Exon stable ID" in df.columns else None
+    cdna_col = "cDNA sequences" if "cDNA sequences" in df.columns else None
+    cds_len_col = "CDS Length" if "CDS Length" in df.columns else None
 
-    # In your headers, these *often* appear next as CDS start/end,
-    # but some cases can have different counts/extra fields.
-    # We'll attempt to parse parts[7] and parts[8] as ints if they look numeric.
-    def looks_int(x: str) -> bool:
-        return bool(re.fullmatch(r"-?\d+", x.strip()))
+    ensure_expected_present(df, tx_col)
 
-    if len(parts) >= 8 and looks_int(parts[7]):
-        out["cds_start"] = parts[7].strip()
-    if len(parts) >= 9 and looks_int(parts[8]):
-        out["cds_end"] = parts[8].strip()
+    df_locked = df[df[tx_col].astype(str).isin(EXPECTED_TRANSCRIPTS)].copy()
 
-    # Exon count heuristic:
-    # Many of your headers contain exon start positions as a ';' separated list.
-    # We scan all remaining fields for a plausible exon-start list (lots of ';' and ints),
-    # and take the max length list we find.
-    best_n = 0
-    for field in parts[9:]:
-        s = field.strip()
-        if ";" in s and all(re.fullmatch(r"-?\d+", tok.strip()) for tok in s.split(";") if tok.strip()):
-            n = len([tok for tok in s.split(";") if tok.strip()])
-            best_n = max(best_n, n)
-    out["exon_count"] = str(best_n) if best_n > 0 else ""
+    rows: List[Dict[str, Any]] = []
+    for tx in EXPECTED_TRANSCRIPTS:
+        sub = df_locked[df_locked[tx_col].astype(str) == tx].copy()
+        if sub.empty:
+            raise ValueError(f"Transcript {tx} expected but has 0 rows after filtering.")
 
-    return out
+        case_id = CASE_ID_BY_TX[tx]
+        expected_label = EXPECTED_LABEL_BY_CASE.get(case_id, "unknown")
 
-def infer_transcript_id(path: str) -> str:
-    """
-    Prefer transcript ID from the header (ENST...), otherwise fall back to scanning.
-    """
-    header = read_first_header_line(path)
-    if header:
-        m = re.search(r"(ENST\d{11})", header)
-        if m:
-            return m.group(1)
+        gene_symbol = safe_first(sub[gene_symbol_col]) or "BRCA1"
+        chrom = safe_first(sub[chrom_col])
+        biotype = safe_first(sub[gene_type_col])
+        gene_start = safe_first(sub[gene_start_col])
+        gene_end = safe_first(sub[gene_end_col])
 
-    # fallback: scan first ~200 non-empty lines
-    with open(path, "r", encoding="utf-8", errors="ignore") as f:
-        seen = 0
-        for line in f:
-            s = line.strip()
-            if not s:
-                continue
-            seen += 1
-            m = re.search(r"(ENST\d{11})", s)
-            if m:
-                return m.group(1)
-            if seen >= 200:
-                break
-    return ""
+        # exon_count: if exon IDs are semicolon-delimited in a single row, split them
+        exon_count = None
+        if exon_id_col:
+            exon_ids_raw = safe_first(sub[exon_id_col])
+            exon_count = len(split_semicol(exon_ids_raw))
+        else:
+            # fallback: number of rows for that transcript
+            exon_count = int(len(sub))
 
-rows = []
-for p in FILE_PATHS:
-    case_id = infer_case_id(p)
-    gene_from_filename = infer_gene_from_filename(p)
+        cds_len = safe_first(sub[cds_len_col]) if cds_len_col else None
 
-    header = read_first_header_line(p)
-    header_info = parse_benchmark_header(header)
+        # raw_input: DO NOT dump entire cDNA sequence into CSV unless you really want it.
+        # Keep it short + deterministic.
+        raw_input = f"Assess aberrant splicing / exon structure and NMD for BRCA1 transcript {tx} using the merged TSV + canonical baseline."
 
-    tx = infer_transcript_id(p)
-    if not tx:
-        raise ValueError(f"Could not infer transcript_id from file: {p}")
-
-    # If filename gene is ambiguous/odd, prefer the header gene symbol when present
-    gene = (header_info.get("header_gene_symbol") or gene_from_filename or "UNKNOWN").upper()
-
-    # Use canonical baseline for all BRCA1 rows (including BRCA1-203 itself)
-    canonical_dataset_path = CANONICAL_DATASET_PATH if gene == "BRCA1" else ""
-    canonical_transcript_id = CANONICAL_TRANSCRIPT_ID if gene == "BRCA1" else ""
-
-    expected_label = EXPECTED_LABELS.get(case_id, "")
-
-    raw_input = (
-        f"Assess aberrant splicing / exon structure and PTC/NMD for {gene}. "
-        f"Use transcript {tx}. "
-        f"Use canonical baseline {CANONICAL_TRANSCRIPT_ID} when provided."
-    )
-
-    # ✅ New columns generated from your file header:
-    # - ensembl_gene_id
-    # - transcript_biotype
-    # - chrom / gene_start / gene_end
-    # - cds_start / cds_end
-    # - exon_count
-    rows.append(
-        {
+        row = {
             "case_id": case_id,
-            "dataset_path": p,
+            "dataset_path": DATASET_PATH,
             "transcript_id": tx,
-            "gene_symbol": gene,
+            "gene_symbol": gene_symbol,
             "raw_input": raw_input,
-
-            # v4 baseline columns:
-            "canonical_dataset_path": canonical_dataset_path,
-            "canonical_transcript_id": canonical_transcript_id,
-
-            # curated truth:
+            "canonical_dataset_path": CANONICAL_DATASET_PATH,
+            "canonical_transcript_id": CANONICAL_TRANSCRIPT_ID,
             "expected_label": expected_label,
 
-            # ---- NEW: parsed-from-header columns ----
-            "fasta_header": header_info.get("header", ""),
-            "ensembl_gene_id": header_info.get("ensembl_gene_id", ""),
-            "ensembl_transcript_id_header": header_info.get("ensembl_transcript_id", ""),
-            "transcript_biotype": header_info.get("transcript_biotype", ""),
-            "chrom": header_info.get("chrom", ""),
-            "gene_start": header_info.get("gene_start", ""),
-            "gene_end": header_info.get("gene_end", ""),
-            "cds_start": header_info.get("cds_start", ""),
-            "cds_end": header_info.get("cds_end", ""),
-            "exon_count": header_info.get("exon_count", ""),
+            # helpful metadata
+            "biotype": biotype,
+            "chrom": chrom,
+            "gene_start": gene_start,
+            "gene_end": gene_end,
+            "cds_length": cds_len,
+            "exon_count": exon_count,
         }
-    )
+        rows.append(row)
 
-df = pd.DataFrame(rows)
-os.makedirs(os.path.dirname(OUT_CSV), exist_ok=True)
-df.to_csv(OUT_CSV, index=False)
+    out_df = pd.DataFrame(rows)
 
-print(f"✅ Wrote benchmark CSV:\n{OUT_CSV}\n")
-print("Preview:\n", df)
+    # canonical first, then case_id
+    out_df["__is_canonical"] = out_df["transcript_id"].eq(CANONICAL_TRANSCRIPT_ID)
+    out_df = out_df.sort_values(["__is_canonical", "case_id"], ascending=[False, True]).drop(columns="__is_canonical")
+
+    out_path = Path(OUT_CSV)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_df.to_csv(out_path, index=False)
+
+    print(f"✅ Wrote: {out_path}")
+    print(out_df[["case_id", "transcript_id", "dataset_path", "expected_label", "exon_count"]].to_string(index=False))
+
+if __name__ == "__main__":
+    main()

@@ -134,9 +134,6 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# data
-data/
-
 # Environments
 .env
 .envrc
@@ -208,3 +205,25 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# data
+data/
+
+# repo
+biomart-perl/ 
+
+# code
+code/queries/
+code/BRCA1_benchmark_10_query.xml
+
+code/CDS-PTC_detection.py
+code/ENST00000461798.5.txt
+code/biomart_perl_example.py
+code/reference_code/
+
+code/splicing_agent.ipynb
+code/splicing_agent_v2.ipynb
+code/splicing_agent_v3.ipynb
+code/splicing_agent_v4.ipynb  #current code
+
+code/BRCA1_protoype_1.py
