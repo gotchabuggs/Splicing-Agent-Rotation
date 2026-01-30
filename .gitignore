@@ -134,9 +134,6 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# data
-data/
-
 # Environments
 .env
 .envrc
@@ -208,3 +205,27 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# requirments
+requirements
+
+# data
+data/
+
+# repo
+biomart-perl/ 
+snapgene/
+
+# code
+code/queries/         # biomart
+code/outdated_code/   # not using
+code/reference_code/  # natalie's code
+
+code/ensembl_vocab.txt  # ensembl column definitions
+
+code/splicing_agent_v3.ipynb  # current code
+code/test_case.ipynb
+code/test_no_agent_case.ipynb
+
+code/make_benchmark_csv.py
+code/make_test_case_benchmark_csv.py

@@ -1,0 +1,54 @@
+# ============================================================
+# Splicing-Agent Rotation Project — Minimal Requirements
+# ------------------------------------------------------------
+# These packages are sufficient to:
+#   - Generate benchmark_cases.csv
+#   - Run the Splicing-Agent notebook (v4)
+#
+# Tested with Python 3.10+
+# ============================================================
+
+# -------------------------
+# Core data handling + I/O
+# -------------------------
+# Used for parsing BioMart exports, building exon/CDS tables,
+# and writing benchmark + results files.
+pandas>=1.5
+requests>=2.28
+
+# -------------------------
+# Agentic / LLM tooling
+# -------------------------
+# Powers the agentic reasoning graph, tool calling,
+# and structured LLM-driven interpretation.
+langchain>=0.1
+langchain-openai>=0.1
+langchain-community>=0.1
+langgraph>=0.0.30
+
+# -------------------------
+# Configuration / environment
+# -------------------------
+# Used for loading API keys and runtime configuration.
+python-dotenv>=1.0
+
+# -------------------------
+# Parsing / schemas
+# -------------------------
+# Used for lightweight schema validation and structured outputs.
+# Pydantic v1 is required for compatibility with current LangChain APIs.
+pydantic>=1.10,<2.0
+
+# -------------------------
+# Notebooks (recommended)
+# -------------------------
+# Required to run and reproduce the analysis notebooks.
+jupyter
+ipykernel
+
+# -------------------------
+# Optional utilities
+# -------------------------
+# Not required for core splicing analysis, but useful
+# for extended workflows (e.g. PDF parsing, reports).
+pypdf

@@ -1,5 +1,25 @@
-langchain-openai
-langchain-community
-langgraph
-python-dotenv
+# Minimal requirements for running benchmark generation and agent notebooks.
+# Tested with Python 3.10+
+
+# Core data + I/O
+pandas>=1.5
+requests>=2.28
+
+# Agentic / LLM tooling
+langchain>=0.1
+langchain-openai>=0.1
+langchain-community>=0.1
+langgraph>=0.0.30
+
+# Config / environment
+python-dotenv>=1.0
+
+# Parsing / schemas
+pydantic>=1.10,<2.0
+
+# Notebooks (for reproducibility)
+jupyter
+ipykernel
+
+# Optional utilities
 pypdf
