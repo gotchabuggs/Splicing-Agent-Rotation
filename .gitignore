@@ -206,27 +206,26 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+# requirments
+requirements
+
 # data
 data/
 
 # repo
 biomart-perl/ 
+snapgene/
 
 # code
-code/queries/
-code/BRCA1_benchmark_10_query.xml
+code/queries/         # biomart
+code/outdated_code/   # not using
+code/reference_code/  # natalie's code
 
-code/CDS-PTC_detection.py
-code/ENST00000461798.5.txt
-code/biomart_perl_example.py
-code/reference_code/
+code/ensembl_vocab.txt  # ensembl column definitions
 
-code/splicing_agent.ipynb
-code/splicing_agent_v2.ipynb
-code/splicing_agent_v3.ipynb
-code/splicing_agent_v4.ipynb  #current code
-
-code/BRCA1_protoype_1.py
-code/splicing_agent_v4.ipynb
+code/splicing_agent_v3.ipynb  # current code
+code/test_case.ipynb
+code/test_no_agent_case.ipynb
 
 code/make_benchmark_csv.py
+code/make_test_case_benchmark_csv.py
