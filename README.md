@@ -152,3 +152,11 @@ This project emphasizes:
 The goal is not to maximize accuracy alone, but to understand **why and how agentic systems succeed or fail** in splicing interpretation.
 
 ---
+
+## Quick Start
+
+### Requirements
+- Python 3.10+ (recommended)
+- Install dependencies:
+```bash
+pip install -r requirements.txt
