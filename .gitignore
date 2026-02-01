@@ -217,22 +217,23 @@ biomart-perl/
 snapgene/
 
 # code
-code/queries/         # biomart
-code/outdated_code/   # not using
-code/reference_code/  # natalie's code
+/code/queries/         # biomart
+/code/outdated_code/   # not using
+/code/reference_code/  # natalie's code
 
-code/ensembl_vocab.txt  # ensembl column definitions
+/code/ensembl_vocab.txt  # ensembl column definitions
 
-code/splicing_agent_v3.ipynb  # current code
-code/test_case.ipynb
-code/test_no_agent_case.ipynb
+/code/splicing_agent_v3.ipynb  # current code
+/code/test_case.ipynb
+/code/test_case_with_agent.ipynb
 
-code/make_benchmark_csv.py
-code/make_test_case_benchmark_csv.py
+/code/make_benchmark_csv.py
+/code/make_test_case_benchmark_csv.py
 
-code/ensembl_vocab.txt
-code/make_test_case_benchmark.py
-code/outdated_code/
-code/reference_code/
-code/splicing_agent_v3.ipynb
-code/test_case_with_agent.ipynb
+# --- local scratch / not for repo ---
+/code/ensembl_vocab.txt
+/code/make_test_case_benchmark.py
+/code/splicing_agent_v3.ipynb
+/code/test_case_with_agent.ipynb
+/code/outdated_code/
+/code/reference_code/
