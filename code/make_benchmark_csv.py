@@ -24,7 +24,6 @@ DATASET_PATH = Path(r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidson
 OUT_CSV = Path(r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\benchmark_cases.csv")
 CANONICAL_DATASET_PATH = Path(r"C:\Users\justi\OneDrive\Desktop\CU-Anschutz\repos\davidsonlab\Splicing-Agent-Rotation\data\benchmark\BRCA1-203.txt")
 
-
 # -----------------------------
 # Canonical baseline for BRCA1
 # -----------------------------
