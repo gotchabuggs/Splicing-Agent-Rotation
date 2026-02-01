@@ -1,5 +1,5 @@
 # ============================================================
-# Splicing-Agent Rotation Project — Minimal Requirements
+# Splicing-Agent Rotation Project Requirements
 # ------------------------------------------------------------
 # These packages are sufficient to:
 #   - Generate benchmark_cases.csv
