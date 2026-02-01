@@ -141,6 +141,47 @@ Ground-truth labels are intentionally **kept outside the agent** to prevent labe
 
 ---
 
+## Example Output Summary
+
+In addition to the verbose, line-by-line diagnostic logs shown above, the agent produces a **structured splicing consequence summary** that consolidates key biological findings into an interpretable report. This summary is the primary artifact used for benchmarking, evaluation, and comparison across models.
+
+### Example: BRCA1 Splicing Consequence Assessment
+
+**Transcript Assessed:** ENST00000461798 (BRCA1)  
+**Canonical Reference:** ENST00000357654 (BRCA1-203)  
+**Reference Genome:** GRCh38  
+
+---
+
+### Key Biological Findings
+
+- **Coding sequence (CDS) truncation detected** relative to the canonical transcript  
+- **Premature termination codon (PTC) predicted** based on upstream stop codon position  
+- **Exon junction complex (EJC) rule applied**, with the stop codon located 227 nt upstream of the final exon–exon junction  
+- **Nonsense-mediated decay (NMD) predicted**, indicating that productive protein translation is unlikely  
+
+---
+
+### Summary Report (Structured Output)
+
+```text
+Transcript ID: ENST00000461798
+Gene: BRCA1
+Chromosome: 17
+Strand: -1
+
+Transcript Length: 582 bp
+Canonical Transcript Length: 7088 bp
+
+CDS Length: 192 bp
+Protein Length (including stop): 64 aa
+Protein Ends with Stop: Yes
+
+PTC Predicted: Yes
+NMD Predicted: Yes
+NMD Reason: EJC rule applied (ptc_predicted=True); distance from last junction to stop end = 227 bp (≥ 55 bp threshold)```
+
+
 ## Benchmarking Philosophy
 
 This project emphasizes:

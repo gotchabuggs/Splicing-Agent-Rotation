@@ -229,3 +229,10 @@ code/test_no_agent_case.ipynb
 
 code/make_benchmark_csv.py
 code/make_test_case_benchmark_csv.py
+
+code/ensembl_vocab.txt
+code/make_test_case_benchmark.py
+code/outdated_code/
+code/reference_code/
+code/splicing_agent_v3.ipynb
+code/test_case_with_agent.ipynb
