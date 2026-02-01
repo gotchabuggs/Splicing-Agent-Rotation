@@ -160,6 +160,16 @@ In addition to the verbose, line-by-line diagnostic logs shown above, the agent 
 - **Exon junction complex (EJC) rule applied**, with the stop codon located 227 nt upstream of the final exon–exon junction  
 - **Nonsense-mediated decay (NMD) predicted**, indicating that productive protein translation is unlikely  
 
+## Benchmarking Philosophy
+
+This project emphasizes:
+- Deterministic, rule-based biological logic
+- Explicit biological assumptions
+- Auditable intermediate states
+- Failure-mode discovery over raw performance
+
+The goal is not to maximize accuracy alone, but to understand **why and how agentic systems succeed or fail** in splicing interpretation.
+
 ---
 
 ### Summary Report (Structured Output)
@@ -180,17 +190,6 @@ Protein Ends with Stop: Yes
 PTC Predicted: Yes
 NMD Predicted: Yes
 NMD Reason: EJC rule applied (ptc_predicted=True); distance from last junction to stop end = 227 bp (≥ 55 bp threshold)```
-
-
-## Benchmarking Philosophy
-
-This project emphasizes:
-- Deterministic, rule-based biological logic
-- Explicit biological assumptions
-- Auditable intermediate states
-- Failure-mode discovery over raw performance
-
-The goal is not to maximize accuracy alone, but to understand **why and how agentic systems succeed or fail** in splicing interpretation.
 
 ---
 
