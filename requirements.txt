@@ -9,46 +9,53 @@
 # ============================================================
 
 # -------------------------
-# Core data handling + I/O
+# Core data handling
 # -------------------------
 # Used for parsing BioMart exports, building exon/CDS tables,
 # and writing benchmark + results files.
 pandas>=1.5
+numpy>=1.23
 requests>=2.28
 
 # -------------------------
-# Agentic / LLM tooling
+# Agentic framework
 # -------------------------
-# Powers the agentic reasoning graph, tool calling,
-# and structured LLM-driven interpretation.
+langgraph>=0.0.30
 langchain>=0.1
 langchain-openai>=0.1
 langchain-community>=0.1
-langgraph>=0.0.30
 
 # -------------------------
-# Configuration / environment
+# LangSmith (evaluation)
 # -------------------------
-# Used for loading API keys and runtime configuration.
+langsmith>=0.1
+
+# -------------------------
+# LLM + environment
+# -------------------------
+openai>=1.0
 python-dotenv>=1.0
 
 # -------------------------
-# Parsing / schemas
+# Tavily retrieval tool
+# -------------------------
+tavily-python>=0.3
+
+# -------------------------
+# Schema validation
 # -------------------------
 # Used for lightweight schema validation and structured outputs.
 # Pydantic v1 is required for compatibility with current LangChain APIs.
 pydantic>=1.10,<2.0
 
 # -------------------------
-# Notebooks (recommended)
+# Notebook support
 # -------------------------
-# Required to run and reproduce the analysis notebooks.
 jupyter
 ipykernel
 
 # -------------------------
-# Optional utilities
+# Utilities
 # -------------------------
-# Not required for core splicing analysis, but useful
-# for extended workflows (e.g. PDF parsing, reports).
+tabulate>=0.9.0
 pypdf

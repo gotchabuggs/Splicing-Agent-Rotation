@@ -1,11 +1,13 @@
 {
   "dockerfile_lines": [],
   "graphs": {
-    "splicing_agent": "./splicing_agent.py:graph"
+    "splicing_agent": "./splicing_agent_test_case.py:graph"
   },
   "env": "./.env",
   "python_version": "3.11",
   "dependencies": [
-    "."
+    ".",
+    "@langchain/langgraph",
+    "pandas"
   ]
 }
