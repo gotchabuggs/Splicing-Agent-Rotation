@@ -1,143 +1,166 @@
 # Splicing-Agent-Rotation
 
-**Splicing-Agent** is a research rotation project focused on designing, implementing, and evaluating an **agentic AI workflow for interpreting aberrant RNA splicing events**, with an emphasis on predicting biologically interpretable consequences such as nonsense-mediated decay (NMD).
+**Splicing-Agent** is a research rotation project focused on designing, implementing, and rigorously evaluating an **agentic AI workflow for interpreting aberrant RNA splicing events**, with emphasis on predicting biologically interpretable fucntional consequences such as **nonsense-mediated decay (NMD)**.
 
-This research project is developed as part of a rotation and serves as a **controlled, auditable testbed** for understanding how agentic systems behave on specialized biological reasoning tasks.
-
----
-
-## Scientific Motivation
-
-Aberrant mRNA splicing is a defining hallmark of **high-grade serous carcinoma (HGSC)**, which exhibits one of the highest burdens of non-canonical exon–exon junctions across all tumor types in The Cancer Genome Atlas (TCGA). This extreme transcriptomic heterogeneity generates hundreds of tumor-enriched isoforms per patient, yet the functional consequences of most splicing events remain unknown.
-
-Some aberrant splicing events introduce **premature termination codons (PTCs)** that may trigger or escape **nonsense-mediated decay (NMD)**, while others disrupt RNA-binding protein (RBP) motifs, truncate essential protein domains, or alter cis-regulatory elements. Although many computational tools exist to analyze individual aspects of splicing—such as PSI, splice site strength, motif disruption, or NMD susceptibility—these analyses are typically performed in isolation.
-
-As a result, current splicing interpretation workflows are:
-- Highly fragmented  
-- Largely manual  
-- Difficult to scale to the combinatorial complexity observed in HGSC  
-
-This project explores whether **agentic AI systems** can offer a more flexible, interpretable, and scalable paradigm for navigating this complexity.
+This project serves as a **controlled, auditable testbed** for understanding how agentic systems behave on agentic, structured biological reasoning tasks.
 
 ---
 
-## Agentic AI Framework
+# Scientific Motivation
 
-Agentic AI systems are large language models (LLMs) augmented with:
-- Tool calling  
-- Retrieval  
-- Explicit state management  
-- Multi-step reasoning  
+Aberrant mRNA splicing is a defining hallmark of **high-grade serous carcinoma (HGSC)**, which exhibits one of the highest burdens of non-canonical exon–exon junctions across all tumor types in The Cancer Genome Atlas (TCGA).
 
-Unlike traditional machine learning models that rely on fixed feature matrices, agentic systems can flexibly:
-- Interpret heterogeneous input formats (JSON, CSV, free text)
-- Automatically call external bioinformatics tools
-- Retrieve relevant annotations
-- Synthesize evidence into structured biological interpretations
+This transcriptomic heterogeneity generates hundreds of tumor-enriched isoforms per patient, yet the functional consequences of most splicing events remain unknown.
 
-This project leverages **LangGraph**, a framework for building small, stateful, testable agents with reproducible execution graphs—an essential requirement when working with heterogeneous biomedical data.
+Aberrant isoforms may:
 
----
+- Introduce **premature termination codons (PTCs)**
+- Trigger or escape **nonsense-mediated decay (NMD)**
+- Disrupt protein domains
+- Alter RNA-binding protein motifs
+- Modify cis-regulatory elements
 
-## Central Hypothesis
+Existing computational tools analyze these features independently. Real-world interpretation workflows are therefore:
 
-The central hypothesis of this rotation is that:
+- Fragmented  
+- Manual  
+- Difficult to scale  
+- Hard to audit  
 
-> **A narrowly scoped, task-specific agentic workflow can be rigorously evaluated using a small, controlled benchmark, enabling identification of both strengths and failure modes in splicing-focused biological reasoning.**
-
-Rather than scaling immediately to large multimodal splicing models, this project prioritizes **interpretability, correctness, and failure analysis**.
+This project explores whether a **stateful, agentic workflow** can provide a more structured and interpretable paradigm for splicing interpretation.
 
 ---
 
-## Specific Aims
+# System Architecture
 
-### Aim 1: Define and implement an agentic workflow for interpreting aberrant splicing events
+Splicing-Agent is implemented using **LangGraph**, enabling:
 
-A LangGraph-based agent is designed to:
-- Accept splicing events in multiple input formats (JSON, CSV, free text)
-- Normalize and reinterpret inputs when necessary
-- Call a single biological analysis tool (e.g., NMD classification)
-- Return structured, interpretable output
+- Explicit state tracking
+- Deterministic tool execution
+- Hard workflow constraints
+- Reproducible execution graphs
+- Structured evaluation via LangSmith
 
-A key focus of this aim is explicitly testing whether the agent produces **consistent biological interpretations when the same information is presented in different formats**.
+The agent consists of:
 
-**Expected Outcome:**  
-A functional, testable LangGraph prototype that performs one complete biological task end-to-end (e.g., NMD classification) and serves as the backbone for subsequent evaluation.
+## Deterministic Biological Tools
 
----
+- **CDS tool** – reconstructs exon table and CDS boundaries from Ensembl BioMart-style exports  
+- **NMD tool** – applies the 50–55 nt exon junction complex (EJC) rule  
+- **Motif tool** – RNA secondary structure detection  
+- **Tavily tool** – optional literature retrieval 
 
-### Aim 2: Develop a benchmark dataset for evaluating agent performance
+## Agent Router
 
-To evaluate agent behavior in a controlled setting, a small benchmark dataset (~5–10 cases) is constructed to represent a spectrum of splicing outcomes:
+- Determines tool execution order  
+- Enforces required steps  
+- Prevents invalid workflows  
 
-- **True positives:**  
-  - Frameshifts generating PTCs  
-  - Protein domain truncation  
-  - Loss of RBP binding motifs  
+## Failure Compiler
 
-- **True negatives:**  
-  - Protein-coding isoforms with no predicted functional impact  
+Centralizes failure taxonomy and computes:
 
-- **Compound events:**  
-  - Events combining domain disruption and NMD triggering, testing whether the agent correctly deprioritizes isoforms unlikely to be translated  
+- `predicted_label`
+- `task_completed`
+- `tool_usage_accuracy`
+- `has_critical_failure`
+- `error_rate_flag`
 
-Each case includes ground-truth labels relevant to the evaluation task (e.g., NMD-triggering vs non-NMD, domain preserved vs disrupted).
+## LLM Judge (Optional)
 
-Evaluation metrics include:
-- Tool Usage Accuracy  
-- Hallucination  
-- Consistency under input-format perturbation  
-- Success rate (Task Completion)
-- Token Cost
-- Latency
-
-**Expected Outcome:**  
-A reproducible benchmark dataset enabling rigorous evaluation of agentic reasoning and downstream comparison with Biomni.
+- Post-graph validation  
+- Hallucination detection  
+- Structured JSON output  
 
 ---
 
-### Aim 3: Evaluate agentic reasoning and compare against Biomni
+# Evaluation Framework
 
-Using the benchmark dataset, the agent is evaluated for:
-- Correctness of tool use  
-- Stability under input variation  
-- Alignment with ground-truth labels  
-- Interpretability of intermediate reasoning steps  
+Evaluation is performed using **LangSmith** with:
 
-In parallel, the same splicing tasks are queried using **Biomni**, a large biomedical foundation model. This comparison highlights:
-- Where specialized, task-specific agents outperform general-purpose models  
-- Where LLM-based systems exhibit blind spots or reasoning failures  
+- Reproducible benchmark datasets  
+- Automated experiment submission  
+- Prompt ablation support  
+- Dataset ablation support  
+- Custom evaluators  
 
-**Expected Outcome:**  
-A quantitative and qualitative assessment of agent performance, including identified failure modes and a direct comparison between specialized agentic pipelines and general-purpose foundation models.
+Evaluation dimensions include:
+
+| Category | Metric |
+|----------|--------|
+| Biological correctness | Label bucket match |
+| Workflow validity | Hard order constraint |
+| Tool discipline | Tool usage accuracy |
+| Runtime stability | No runtime error |
+| Failure taxonomy | No critical failure |
+| Hallucination | Hallucination-free |
+| Efficiency | Latency + token cost |
+
+This separation ensures the system is evaluated on **interpretability and discipline**, not just prediction accuracy.
 
 ---
 
-## Biological Scope (Current)
+# Benchmark Philosophy
+
+The benchmark is intentionally small and controlled.
+
+It includes:
+
+- True NMD-triggering transcripts  
+- Protein-coding controls  
+- Canonical transcript baselines  
+- Missing-data ablations  
+- Sequence-only ablations  
+- No-genomic-coordinate ablations  
+
+Ground-truth labels are **kept outside the agent state** to prevent label leakage.
+
+---
+
+# Current Biological Scope
 
 - **Organism:** Human  
-- **Reference Genome:** GRCh38  
-- **Initial Benchmark Gene:** BRCA1  
-- **Canonical Transcript:** BRCA1-203 (ENST00000357654)  
+- **Genome:** GRCh38  
+- **Initial gene:** BRCA1  
+- **Canonical transcript:** ENST00000357654 (BRCA1-203)  
 
-The BRCA1 benchmark provides a controlled setting for validating logic related to CDS truncation, PTC prediction, and NMD rules before extending to HGSC-wide analyses.
+The BRCA1 test case validates:
+
+- CDS truncation logic  
+- PTC prediction  
+- NMD rule implementation  
+- Canonical baseline comparison  
 
 ---
 
-## Implemented Methodology (Current)
+# LangSmith Integration
 
-The current implementation supports:
+The project includes:
 
-- Flexible parsing of BioMart-style transcript exports
-- Robust exon table reconstruction
-- CDS start/end aggregation
-- Observed vs canonical stop codon comparison
-- **PTC prediction** based on CDS truncation
-- **NMD prediction using the 50–55 nucleotide exon junction complex (EJC) rule**
-  - Applied only when a PTC is predicted
-- Optional **retained intron proxy** using junction mismatch
+## 1. Dataset uploader
 
-Ground-truth labels are intentionally **kept outside the agent** to prevent label leakage during evaluation.
+```bash
+python langsmith_make_benchmark.py
+```
+
+## 2. Experiment runner
+
+```bash
+python langsmith.py
+```
+
+Optional tracing:
+
+```bash
+python langsmith.py --trace
+```
+
+This enables:
+
+- Compare table analysis  
+- Cross-prompt experiments  
+- Cross-dataset experiments  
+- Automated metric aggregation  
 
 ---
 
@@ -148,17 +171,20 @@ Ground-truth labels are intentionally **kept outside the agent** to prevent labe
 - **Exon junction complex (EJC) rule applied**, with the stop codon located 227 nt upstream of the final exon–exon junction  
 - **Nonsense-mediated decay (NMD) predicted**, indicating that productive protein translation is unlikely  
 
-=======
 
 ## Benchmarking Philosophy
+# Design Principles
 
-This project emphasizes:
-- Deterministic, rule-based biological logic
-- Explicit biological assumptions
-- Auditable intermediate states
-- Failure-mode discovery over raw performance
+This project prioritizes:
 
-The goal is not to maximize accuracy alone, but to understand **why and how agentic systems succeed or fail** in splicing interpretation.
+- Deterministic biological rules  
+- Explicit failure classification  
+- Hard workflow enforcement  
+- Auditability  
+- Interpretability  
+- Controlled evaluation over scale  
+
+The objective is not maximal accuracy, but **mechanistic understanding of agentic reasoning behavior**.
 
 ---
 
@@ -184,12 +210,51 @@ NMD Reason: EJC rule applied (ptc_predicted=True); distance from last junction t
 
 ---
 
-=======
 
 ## Quick Start
 
-### Requirements
-- Python 3.10+ (recommended)
-- Install dependencies:
+## 1️⃣ Install dependencies
+
 ```bash
 pip install -r requirements.txt
+```
+
+## 2️⃣ Set environment variables
+
+```
+OPENAI_API_KEY=...
+TAVILY_API_KEY=...
+LANGSMITH_API_KEY=...
+```
+
+## 3️⃣ Upload benchmark to Langsmith
+
+```bash
+python langsmith_make_benchmark.py
+```
+
+## 4️⃣ Run experiment + evaluation on Langsmith
+
+```bash
+python langsmith_run_experiment.py
+```
+
+---
+
+# Project Status
+
+Current version includes:
+
+- Deterministic NMD classifier  
+- Canonical transcript comparison  
+- Structured failure taxonomy  
+- Hallucination flagging  
+- LangSmith experiment automation  
+- Prompt ablation infrastructure  
+
+Future directions + possible extensions:
+
+- Domain truncation logic  
+- RBP motif enrichment  
+- Multi-gene scaling  
+- HGSC-wide evaluation  

@@ -1,0 +1,11 @@
+Determine whether each transcript undergoes nonsense-mediated decay (NMD).
+
+Use the transcript information provided to decide if NMD occurs. Interpret transcript structure, stop codon position, and exon organization as needed.
+
+Classify each transcript and briefly justify your decision.
+
+Output one row per transcript with:
+-transcript_id
+-predicted_label
+-predicted_label_bucket
+-reasoning

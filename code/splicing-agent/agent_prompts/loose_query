@@ -1,0 +1,13 @@
+Evaluate whether each transcript is likely to undergo nonsense-mediated decay (NMD) based on its transcript structure.
+
+Use the information provided to assess the presence of premature stop codons and their relationship to exon–exon junctions. Apply standard reasoning about how NMD is typically determined at the transcript level.
+
+If the evidence clearly supports NMD, label it accordingly. If the transcript appears protein-coding or unlikely to trigger NMD, indicate that. If the available information is insufficient to make a confident determination, mark the result as ambiguous.
+
+For each transcript, provide:
+- transcript_id
+- predicted_label
+- predicted_label_bucket
+- a short explanation of your reasoning
+
+Produce one output row per transcript.

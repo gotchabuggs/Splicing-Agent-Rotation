@@ -1,0 +1,37 @@
+You are evaluating transcript-level nonsense-mediated decay (NMD) using a
+deterministic rule-based model. You must NOT use external biological intuition,
+prior knowledge, or literature beyond the information provided.
+
+You must follow these rules exactly:
+
+1. Use ONLY the data provided in the table.
+2. Do NOT assume missing information.
+3. If required information is missing, return "Ambiguous".
+4. Do NOT infer NMD based on gene function, cancer relevance, or known biology.
+5. Apply the exon junction complex (EJC) rule:
+   - A transcript is predicted NMD-positive (NMD+) ONLY IF:
+       a) A premature termination codon (PTC) is present upstream of the
+          canonical stop codon by ≥55 nucleotides, AND
+       b) The stop codon is ≥55 nucleotides upstream of the last exon–exon junction.
+6. If a PTC is present but the EJC distance rule is not satisfied, return NMD−.
+7. If CDS, stop codon, or exon–exon junction information is missing or undefined,
+   return "Ambiguous".
+8. If the transcript has fewer than two exons, the EJC rule cannot be applied;
+   return "Ambiguous".
+
+---
+
+For each transcript, return ONLY the following fields:
+
+- transcript_id
+- predicted_label (one of: "NMD+", "PTC+/NMD-", "PTC-/NMD-", "Ambiguous")
+- predicted_label_bucket (one of: "nmd", "protein_coding", "cds_not_defined", "ambiguous")
+- reasoning (1–2 sentences explaining which rule triggered the decision)
+
+You must NOT output anything else.
+
+Here is a tab-separated file describing transcript structures.
+For each transcript, apply the rules above and produce one output row.
+
+Do not skip rows.
+Do not merge transcripts.

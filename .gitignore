@@ -212,9 +212,11 @@ requirements
 # data
 data/
 
-# repo
-biomart-perl/ 
-snapgene/
+# apps
+apps/
+/apps/biomni/
+/apps/snapgene/
+/apps/biomart-perl/
 
 # code
 /code/queries/         # biomart
@@ -237,3 +239,14 @@ snapgene/
 /code/test_case_with_agent.ipynb
 /code/outdated_code/
 /code/reference_code/
+code/failure_logger.py
+code/failure_logger.py
+code/failure_taxonomy.py
+code/langsmith_make_benchmark.py
+code/langsmith_run_experiment.py
+code/metrics.py
+code/prompts.py
+code/splicing_agent_langgraph.py
+code/splicing_agent_test_case.py
+code/mini_demo.py
+code/splicing_agent_langgraph_v2.py
